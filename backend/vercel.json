@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/index.js" },
+    { "source": "/health", "destination": "/index.js" },
+    { "source": "/super", "destination": "/super.html" },
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/ref(.*)", "destination": "/index.html" },
+    { "source": "/(.*)", "destination": "/$1" }
+  ]
+}

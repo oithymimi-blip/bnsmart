@@ -413,9 +413,16 @@ const DEFAULT_REWARD_CONFIG = {
 };
 
 let _memSettings = {};
+const BUNDLED_SETTINGS_FILE = path.join(__dirname, '..', 'settings.json');
 const SETTINGS_FILE = process.env.VERCEL
   ? path.join('/tmp', 'settings.json')
-  : path.join(__dirname, '..', 'settings.json');
+  : BUNDLED_SETTINGS_FILE;
+
+if (process.env.VERCEL && fs.existsSync(BUNDLED_SETTINGS_FILE) && !fs.existsSync(SETTINGS_FILE)) {
+  try {
+    fs.copyFileSync(BUNDLED_SETTINGS_FILE, SETTINGS_FILE);
+  } catch (_) {}
+}
 
 async function getSetting(key, defaultValue = null) {
   if (_memSettings[key] !== undefined) {
@@ -448,6 +455,13 @@ async function getSetting(key, defaultValue = null) {
   try {
     if (fs.existsSync(SETTINGS_FILE)) {
       const parsed = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
+      if (parsed && parsed[key] !== undefined) {
+        _memSettings[key] = parsed[key];
+        return parsed[key];
+      }
+    }
+    if (fs.existsSync(BUNDLED_SETTINGS_FILE)) {
+      const parsed = JSON.parse(fs.readFileSync(BUNDLED_SETTINGS_FILE, 'utf8'));
       if (parsed && parsed[key] !== undefined) {
         _memSettings[key] = parsed[key];
         return parsed[key];
