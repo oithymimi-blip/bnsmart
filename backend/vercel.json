@@ -1,12 +1,17 @@
 {
   "version": 2,
-  "cleanUrls": true,
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/index.js" },
-    { "source": "/health", "destination": "/index.js" },
-    { "source": "/super", "destination": "/super/index.html" },
-    { "source": "/admin", "destination": "/admin/index.html" },
-    { "source": "/ref(.*)", "destination": "/ref/index.html" },
-    { "source": "/", "destination": "/index.html" }
+  "builds": [
+    {
+      "src": "index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "index.js" },
+    { "src": "/health", "dest": "index.js" },
+    { "src": "/super", "dest": "public/super/index.html" },
+    { "src": "/admin", "dest": "public/admin/index.html" },
+    { "src": "/ref(.*)", "dest": "public/ref/index.html" },
+    { "src": "/(.*)", "dest": "public/$1" }
   ]
 }

@@ -1,23 +1,19 @@
 'use strict';
 
-/**
- * EraVarex Backend — Main Express Entrypoint
- */
-
-const path = require('path');
-const fs   = require('fs');
+const express = require('express');
+const app     = express();
+const path    = require('path');
+const fs      = require('fs');
 
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 require('dotenv').config();
 
-const express = require('express');
-const cors    = require('cors');
+const cors = require('cors');
 
 const publicRoutes = require('./src/routes/public');
 const adminRoutes  = require('./src/routes/admin');
 
-const app  = express();
 const PORT = Number(process.env.PORT || 8787);
 
 app.use(cors({ origin: '*' }));
@@ -117,3 +113,4 @@ if (require.main === module) {
 }
 
 module.exports = app;
+module.exports.default = app;
