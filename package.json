@@ -7,7 +7,7 @@
     "start": "node backend/src/server.js",
     "dev": "node backend/src/server.js",
     "server": "node backend/index.js",
-    "build": "mkdir -p public/ref public/super public/admin backend/public/ref backend/public/super backend/public/admin && cp frontend/index.html public/index.html && cp frontend/super.html public/super.html && cp frontend/admin.html public/admin.html && cp frontend/index.html public/ref/index.html && cp frontend/super.html public/super/index.html && cp frontend/admin.html public/admin/index.html && cp frontend/index.html frontend/ref/index.html && cp frontend/super.html frontend/super/index.html && cp -r public/* backend/public/"
+    "build": "mkdir -p public/ref public/super public/admin backend/public/ref backend/public/super backend/public/admin && cp frontend/index.html public/index.html && cp frontend/super.html public/super.html && cp frontend/admin.html public/admin.html && cp frontend/index.html public/ref/index.html && cp frontend/super.html public/super/index.html && cp frontend/admin.html public/admin/index.html && cp frontend/index.html frontend/ref/index.html && cp frontend/super.html frontend/super/index.html && cp frontend/index.html backend/public/index.html && cp frontend/super.html backend/public/super.html && cp frontend/admin.html backend/public/admin.html && cp frontend/index.html backend/public/ref/index.html && cp frontend/super.html backend/public/super/index.html && cp frontend/admin.html backend/public/admin/index.html && printf \"'use strict';\\n\\nmodule.exports = require('../index');\\n\" > backend/public/index.js && printf \"'use strict';\\n\\nmodule.exports = require('../backend/index');\\n\" > public/index.js"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",

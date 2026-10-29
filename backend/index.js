@@ -61,22 +61,40 @@ function getFrontendDir() {
 
 const frontendDir = getFrontendDir();
 
+function safeSend(res, filename) {
+  const filePath = path.join(frontendDir, filename);
+  if (fs.existsSync(filePath)) {
+    return res.sendFile(filePath);
+  }
+  const fallbackPaths = [
+    path.join(__dirname, 'public', filename),
+    path.join(__dirname, '..', 'public', filename),
+    path.join(__dirname, '..', 'frontend', filename)
+  ];
+  for (const fp of fallbackPaths) {
+    if (fs.existsSync(fp)) {
+      return res.sendFile(fp);
+    }
+  }
+  return res.status(200).send(`<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/"></head><body>Loading...</body></html>`);
+}
+
 app.get(['/admin', '/admin/'], (_req, res) => {
-  res.sendFile(path.join(frontendDir, 'admin.html'));
+  safeSend(res, 'admin.html');
 });
 
 app.get(['/super', '/super/'], (_req, res) => {
-  res.sendFile(path.join(frontendDir, 'super.html'));
+  safeSend(res, 'super.html');
 });
 
 app.get(['/ref', '/ref/*'], (_req, res) => {
-  res.sendFile(path.join(frontendDir, 'index.html'));
+  safeSend(res, 'index.html');
 });
 
 app.use(express.static(frontendDir, { etag: false, maxAge: 0 }));
 
 app.get('/', (_req, res) => {
-  res.sendFile(path.join(frontendDir, 'index.html'));
+  safeSend(res, 'index.html');
 });
 
 app.use((_req, res) => {
