@@ -3,15 +3,18 @@
   "builds": [
     {
       "src": "api/index.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["public/**", "backend/public/**", "frontend/**"]
+      }
     }
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "api/index.js" },
     { "src": "/health", "dest": "api/index.js" },
-    { "src": "/super", "dest": "public/super/index.html" },
-    { "src": "/admin", "dest": "public/admin/index.html" },
-    { "src": "/ref(.*)", "dest": "public/ref/index.html" },
-    { "src": "/(.*)", "dest": "public/$1" }
+    { "src": "/super(.*)", "dest": "api/index.js" },
+    { "src": "/admin(.*)", "dest": "api/index.js" },
+    { "src": "/ref(.*)", "dest": "api/index.js" },
+    { "src": "/(.*)", "dest": "api/index.js" }
   ]
 }

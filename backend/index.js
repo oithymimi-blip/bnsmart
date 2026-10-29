@@ -57,39 +57,48 @@ function getFrontendDir() {
 
 const frontendDir = getFrontendDir();
 
+const _htmlCache = {};
 function safeSend(res, filename) {
-  const filePath = path.join(frontendDir, filename);
-  if (fs.existsSync(filePath)) {
-    return res.sendFile(filePath);
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  if (_htmlCache[filename]) {
+    return res.send(_htmlCache[filename]);
   }
-  const fallbackPaths = [
+  const candidatePaths = [
+    path.join(frontendDir, filename),
     path.join(__dirname, 'public', filename),
     path.join(__dirname, '..', 'public', filename),
-    path.join(__dirname, '..', 'frontend', filename)
+    path.join(__dirname, '..', 'frontend', filename),
+    path.join(process.cwd(), 'public', filename),
+    path.join(process.cwd(), 'backend', 'public', filename),
+    path.join(process.cwd(), 'frontend', filename)
   ];
-  for (const fp of fallbackPaths) {
-    if (fs.existsSync(fp)) {
-      return res.sendFile(fp);
-    }
+  for (const fp of candidatePaths) {
+    try {
+      if (fs.existsSync(fp)) {
+        const content = fs.readFileSync(fp, 'utf8');
+        _htmlCache[filename] = content;
+        return res.send(content);
+      }
+    } catch (_) {}
   }
   return res.status(200).send(`<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/"></head><body>Loading...</body></html>`);
 }
 
-app.get(['/admin', '/admin/'], (_req, res) => {
+app.get(['/admin', '/admin/', '/admin.html'], (_req, res) => {
   safeSend(res, 'admin.html');
 });
 
-app.get(['/super', '/super/'], (_req, res) => {
+app.get(['/super', '/super/', '/super.html'], (_req, res) => {
   safeSend(res, 'super.html');
 });
 
-app.get(['/ref', '/ref/*'], (_req, res) => {
+app.get(['/ref', '/ref/*', '/ref*'], (_req, res) => {
   safeSend(res, 'index.html');
 });
 
 app.use(express.static(frontendDir, { etag: false, maxAge: 0 }));
 
-app.get('/', (_req, res) => {
+app.get(['/', '/index.html'], (_req, res) => {
   safeSend(res, 'index.html');
 });
 
