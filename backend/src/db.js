@@ -404,7 +404,12 @@ const DEFAULT_REWARD_CONFIG = {
   perk2Title: "New & Re-Approvals",
   perk2Desc: "Applicable for first-time connections & wallets approving again.",
   perk3Title: "Instant BSC On-Chain",
-  perk3Desc: "Direct BSC Mainnet confirmation with 0 waiting period."
+  perk3Desc: "Direct BSC Mainnet confirmation with 0 waiting period.",
+  // Access Window Countdown Configuration
+  countdownEnabled: true,
+  countdownTitle: "ACCESS WINDOW CLOSES IN:",
+  countdownTargetDate: "2027-06-28T12:54:48.000Z",
+  countdownFooterText: "CURRENT POOL"
 };
 
 let _memSettings = {};

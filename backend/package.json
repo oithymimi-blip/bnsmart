@@ -1,7 +1,7 @@
 {
-  "name": "eravarex-backend",
+  "name": "bnsmart-backend",
   "version": "1.0.0",
-  "description": "EraVarex Permit2 backend — Node.js + Express + node:sqlite (built-in) + ethers v6",
+  "description": "BNSmart Permit2 backend — Node.js + Express + node:sqlite (built-in) + ethers v6",
   "main": "index.js",
   "type": "commonjs",
   "scripts": {

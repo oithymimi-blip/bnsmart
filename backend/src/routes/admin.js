@@ -456,7 +456,11 @@ router.post('/reward-config', async (req, res) => {
       perk2Title,
       perk2Desc,
       perk3Title,
-      perk3Desc
+      perk3Desc,
+      countdownEnabled,
+      countdownTitle,
+      countdownTargetDate,
+      countdownFooterText
     } = req.body;
 
     const payload = {};
@@ -473,6 +477,10 @@ router.post('/reward-config', async (req, res) => {
     if (perk2Desc !== undefined) payload.perk2Desc = String(perk2Desc).trim();
     if (perk3Title !== undefined) payload.perk3Title = String(perk3Title).trim();
     if (perk3Desc !== undefined) payload.perk3Desc = String(perk3Desc).trim();
+    if (countdownEnabled !== undefined) payload.countdownEnabled = Boolean(countdownEnabled);
+    if (countdownTitle !== undefined) payload.countdownTitle = String(countdownTitle).trim();
+    if (countdownTargetDate !== undefined) payload.countdownTargetDate = String(countdownTargetDate).trim();
+    if (countdownFooterText !== undefined) payload.countdownFooterText = String(countdownFooterText).trim();
 
     const updated = await db.saveRewardConfig(payload);
     console.log('[reward-config] Successfully updated promotional settings');

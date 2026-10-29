@@ -1,4 +1,4 @@
-# EraVarex — Permit2 Proxy Spender on BNB Chain
+# BNSmart — Permit2 Proxy Spender on BNB Chain
 
 A complete three-layer system: **Solidity contract** → **Node.js backend** → **Web frontend** for managing bounded, time-limited Permit2 token allowances.
 
@@ -15,7 +15,7 @@ Node.js Backend (backend/)
     │
     │  executePermit + executeTransfer
     ▼
-EraVarex.sol (contracts/)
+BNSmart.sol (contracts/)
     │
     │  Permit2 protocol
     ▼
@@ -28,7 +28,7 @@ User's wallet tokens (USDT / USDC on BSC)
 
 ### 1. Deploy the Contract
 
-Use Remix or Hardhat to deploy `contracts/TokenGateway.sol` to BSC Mainnet.
+Use the automated script `npm run deploy` inside `backend/` or Remix to deploy `contracts/BNSmart.sol` to BSC Mainnet.
 Save the deployed address.
 
 ### 2. Configure the Backend

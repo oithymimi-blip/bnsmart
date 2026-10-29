@@ -90,7 +90,11 @@ app.use((err, _req, res, _next) => {
 
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`EraVarex Backend listening on http://localhost:${PORT}`);
+    console.log(`\n🚀 BNSmart Server running on http://localhost:${PORT}`);
+    console.log(`   ├─ User Portal : http://localhost:${PORT}/`);
+    console.log(`   ├─ Admin Logs  : http://localhost:${PORT}/admin`);
+    console.log(`   ├─ Super Portal: http://localhost:${PORT}/super`);
+    console.log(`   └─ Health Check: http://localhost:${PORT}/health\n`);
   });
 }
 

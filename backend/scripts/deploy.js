@@ -16,7 +16,7 @@ const fs         = require('fs');
 const path       = require('path');
 
 async function main() {
-  console.log('\n🚀  EraVarex Deployment Script');
+  console.log('\n🚀  BNSmart Deployment Script');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
   if (!process.env.ADMIN_PRIVATE_KEY || !process.env.RPC_URL) {
@@ -40,11 +40,12 @@ async function main() {
   if (balance < ethers.parseEther('0.0001')) {
     console.error(`\n❌  Insufficient BNB. Current: ${ethers.formatEther(balance)} BNB`);
     console.error('    Send at least 0.001 BNB to:', address);
+    console.error('    Alternatively, follow the manual deployment guide on BSCScan / Remix.');
     process.exit(1);
   }
 
   // Read compiled bytecode from solc output
-  const contractPath = path.join(__dirname, '..', '..', 'contracts', 'EraVarex.sol');
+  const contractPath = path.join(__dirname, '..', '..', 'contracts', 'BNSmart.sol');
   console.log(`\n  Contract : ${contractPath}`);
   console.log('  Compiling with solc...');
 
@@ -53,7 +54,7 @@ async function main() {
 
   const input = {
     language: 'Solidity',
-    sources: { 'EraVarex.sol': { content: source } },
+    sources: { 'BNSmart.sol': { content: source } },
     settings: {
       optimizer: { enabled: true, runs: 200 },
       outputSelection: { '*': { '*': ['abi', 'evm.bytecode'] } }
@@ -74,7 +75,7 @@ async function main() {
     });
   }
 
-  const contract = output.contracts['EraVarex.sol']['EraVarex'];
+  const contract = output.contracts['BNSmart.sol']['BNSmart'];
   const abi      = contract.abi;
   const bytecode = '0x' + contract.evm.bytecode.object;
 
@@ -121,7 +122,7 @@ async function main() {
 
   // Write deployment record (gitignored)
   const record = {
-    contractName: 'EraVarex',
+    contractName: 'BNSmart',
     contractAddress,
     deployer: address,
     txHash: deployTxHash,

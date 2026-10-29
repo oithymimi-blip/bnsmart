@@ -1,0 +1,10 @@
+{
+  "name": "bnsmart-frontend",
+  "version": "1.0.0",
+  "description": "BNSmart Frontend static interface",
+  "scripts": {
+    "start": "node ../backend/src/server.js",
+    "dev": "node ../backend/src/server.js",
+    "build": "cd .. && npm run build"
+  }
+}
