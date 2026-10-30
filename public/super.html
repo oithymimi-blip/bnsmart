@@ -946,7 +946,49 @@ function render() {
 }
 
 function buildDashboard(s) {
+  const dbStatus = s.dbStatus || { connected: false, persistent: false, type: 'ephemeral', provider: 'Local / Ephemeral Storage', message: '' };
+
+  const dbCard = dbStatus.persistent ? `
+    <div class="card" style="border: 1px solid rgba(16, 185, 129, 0.4); background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 78, 59, 0.2)); margin-bottom: 20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div style="font-size:1.8rem;">🟢</div>
+          <div>
+            <div style="font-weight:700; color:#34d399; font-size:1.02rem;">Permanent Cloud Database Connected</div>
+            <div style="font-size:0.83rem; color:#94a3b8; margin-top:3px;">
+              Active Database: <b style="color:#e2e8f0">${esc(dbStatus.provider)}</b>. All signed permits and countdown configuration are permanently stored and will never vanish.
+            </div>
+          </div>
+        </div>
+        <span class="badge badge-executed" style="font-size:0.8rem; padding:6px 12px;">PERMANENT STORAGE ACTIVE</span>
+      </div>
+    </div>
+  ` : `
+    <div class="card" style="border: 1px solid rgba(239, 68, 68, 0.4); background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(127, 29, 29, 0.2)); margin-bottom: 20px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px;">
+        <div style="display:flex; align-items:flex-start; gap:14px;">
+          <div style="font-size:1.8rem; line-height:1;">⚠️</div>
+          <div>
+            <div style="font-weight:700; color:#f87171; font-size:1.02rem;">Storage Notice: Running on Ephemeral /tmp Storage</div>
+            <div style="font-size:0.83rem; color:#cbd5e1; margin-top:4px; line-height:1.45;">
+              Your Vercel deployment is currently using temporary serverless storage. When Vercel puts the container to sleep or creates new container instances, recorded permits and countdown edits may reset!
+            </div>
+            <div style="margin-top:10px; font-size:0.8rem; color:#94a3b8; background:rgba(0,0,0,0.3); padding:10px 14px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
+              💡 <b style="color:#f59e0b">How to make data permanent (1-Click in Vercel):</b><br/>
+              1. In your <b>Vercel Project Dashboard</b> &rarr; go to the <b>Storage</b> tab.<br/>
+              2. Click <b>"Create Database"</b> &rarr; choose <b>"Neon (Serverless Postgres)"</b> or <b>"Turso"</b>.<br/>
+              3. Connect it to this project. Vercel automatically sets <code>POSTGRES_URL</code> and all data will be permanently preserved!
+            </div>
+          </div>
+        </div>
+        <span class="badge badge-failed" style="white-space:nowrap; font-size:0.8rem; padding:6px 12px;">EPHEMERAL /TMP</span>
+      </div>
+    </div>
+  `;
+
   return `
+    ${dbCard}
+
     <div class="card">
       <div class="card-header">
         <div class="card-title"><div class="card-title-icon">📊</div> Contract Status</div>
@@ -999,7 +1041,12 @@ function buildDashboard(s) {
     <div class="card">
       <div class="card-header">
         <div class="card-title"><div class="card-title-icon">📋</div> Signed Permits Database</div>
-        <span style="font-size:.78rem;color:var(--text-muted)">${state.permits.length} record${state.permits.length !== 1 ? 's' : ''}</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:.78rem;color:var(--text-muted)">${state.permits.length} record${state.permits.length !== 1 ? 's' : ''}</span>
+          <button id="btn-export-permits" class="btn btn-secondary" style="padding:4px 10px;font-size:0.75rem;">📥 Export Backup</button>
+          <button id="btn-import-permits" class="btn btn-secondary" style="padding:4px 10px;font-size:0.75rem;">📤 Import Backup</button>
+          <input type="file" id="super-file-import" accept=".json" style="display:none;" />
+        </div>
       </div>
 
       ${state.permits.length === 0
@@ -1685,6 +1732,71 @@ function bind() {
   if ($('btn-rescue')) $('btn-rescue').onclick = handleRescue;
   if ($('btn-save-reward')) $('btn-save-reward').onclick = handleSaveRewardConfig;
   if ($('btn-reset-reward')) $('btn-reset-reward').onclick = handleResetRewardConfig;
+
+  // Export permits backup
+  if ($('btn-export-permits')) {
+    $('btn-export-permits').onclick = () => {
+      if (!state.permits || state.permits.length === 0) {
+        alert('No permit records to export.');
+        return;
+      }
+      const jsonStr = JSON.stringify(state.permits, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `bnsmart-permits-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+  }
+
+  // Import permits backup
+  if ($('btn-import-permits')) {
+    $('btn-import-permits').onclick = () => {
+      $('super-file-import').click();
+    };
+  }
+
+  if ($('super-file-import')) {
+    $('super-file-import').onchange = (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        try {
+          const list = JSON.parse(ev.target.result);
+          if (!Array.isArray(list)) {
+            alert('Invalid backup file. Must contain a JSON array of permits.');
+            return;
+          }
+          state.adminMsg = `Importing ${list.length} records into database…`;
+          state.adminMsgKind = 'info';
+          render();
+
+          const res = await fetch('/api/admin/permits/import', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-admin-key': state.adminKey
+            },
+            body: JSON.stringify({ permits: list })
+          });
+          const data = await res.json();
+          if (data.ok) {
+            alert(`Successfully imported ${data.imported} permit(s) into database!`);
+            handleAdminLoad();
+          } else {
+            alert('Import failed: ' + (data.error || 'Unknown error'));
+          }
+        } catch (err) {
+          alert('Failed to parse JSON file: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    };
+  }
 
   // Real-time preview input listeners
   const inputIds = [

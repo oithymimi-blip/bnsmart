@@ -66,6 +66,20 @@ router.get('/reward-config', async (_req, res) => {
 });
 
 /* ─────────────────────────────────────────
+   GET /api/db-status
+   Returns cloud database connection status.
+───────────────────────────────────────── */
+router.get('/db-status', async (_req, res) => {
+  try {
+    const status = db.getDbStatus();
+    res.json(status);
+  } catch (err) {
+    console.error('[GET /db-status]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/* ─────────────────────────────────────────
    POST /api/permits
    Store a signed Permit2 approval.
 ───────────────────────────────────────── */

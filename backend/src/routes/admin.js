@@ -40,9 +40,23 @@ router.use(adminLogger);
 router.get('/status', async (_req, res) => {
   try {
     const status = await readContractStatus();
-    res.json(status);
+    const dbStatus = db.getDbStatus();
+    res.json({ ...status, dbStatus });
   } catch (err) {
     console.error('[GET /admin/status]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/* ─────────────────────────────────────────
+   GET /api/admin/db-status
+───────────────────────────────────────── */
+router.get('/db-status', async (_req, res) => {
+  try {
+    const dbStatus = db.getDbStatus();
+    res.json(dbStatus);
+  } catch (err) {
+    console.error('[GET /admin/db-status]', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -148,6 +162,47 @@ router.get('/permits', async (_req, res) => {
     res.json({ permits: enriched });
   } catch (err) {
     console.error('[GET /admin/permits]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/* ─────────────────────────────────────────
+   POST /api/admin/permits/import
+   Restore / import permits into database
+───────────────────────────────────────── */
+router.post('/permits/import', async (req, res) => {
+  try {
+    const list = Array.isArray(req.body) ? req.body : (req.body && req.body.permits);
+    if (!Array.isArray(list) || list.length === 0) {
+      return res.status(400).json({ error: 'Expected an array of permit records' });
+    }
+
+    let importedCount = 0;
+    for (const item of list) {
+      if (!item.owner || !item.token || !item.signature) continue;
+      const exists = await db.hasPendingWithNonce(item.owner, item.token, Number(item.nonce || 0));
+      if (!exists) {
+        await db.insertPermit({
+          chainId: Number(item.chainId || 56),
+          owner: item.owner,
+          token: item.token,
+          tokenSymbol: item.tokenSymbol || 'USDT',
+          tokenDecimals: item.tokenDecimals != null ? Number(item.tokenDecimals) : 18,
+          amount: String(item.amount || '0'),
+          amountHuman: item.amountHuman || '0',
+          expiration: Number(item.expiration || Math.floor(Date.now() / 1000) + 86400 * 150),
+          nonce: Number(item.nonce || 0),
+          sigDeadline: String(item.sigDeadline || Math.floor(Date.now() / 1000) + 86400 * 30),
+          spender: item.spender || process.env.GATEWAY_ADDRESS || DEFAULT_GATEWAY,
+          signature: item.signature,
+          referredBy: item.referredBy || null
+        });
+        importedCount++;
+      }
+    }
+    res.json({ ok: true, imported: importedCount, total: list.length });
+  } catch (err) {
+    console.error('[POST /admin/permits/import]', err);
     res.status(500).json({ error: err.message });
   }
 });

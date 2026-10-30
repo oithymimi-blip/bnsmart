@@ -410,7 +410,10 @@
         <h1>Wallet Sign-up Log</h1>
         <p>Compact view of when a wallet joined, its referral tag, and who referred it — stored permanently.</p>
       </div>
-      <div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div id="db-status-badge" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fbbf24;">
+          <span>⏳</span> Checking DB...
+        </div>
         <button class="btn-notification" onclick="toggleNotifications()">
           <span>🔔</span> Notifications <span id="notif-badge" style="background:#f59e0b;color:#000;font-size:0.7rem;padding:1px 6px;border-radius:10px;font-weight:700;margin-left:4px;display:none;">0</span>
         </button>
@@ -460,7 +463,7 @@
             <tr>
               <td colspan="5" class="empty-state">
                 <div class="empty-state-icon">⏳</div>
-                <div>Loading wallet sign-ups from Turso Cloud...</div>
+                <div>Loading wallet sign-ups from database...</div>
               </td>
             </tr>
           </tbody>
@@ -546,6 +549,7 @@
           badge.style.display = allSignups.length > 0 ? 'inline-block' : 'none';
         }
 
+        checkDbStatus();
         if (showToastOnDone) {
           showToast(`Refreshed: ${allSignups.length} wallet(s) loaded.`);
         }
@@ -682,9 +686,36 @@
       showToast(`Total signups recorded: ${allSignups.length}`);
     }
 
+    async function checkDbStatus() {
+      try {
+        const res = await fetch('/api/db-status');
+        if (!res.ok) return;
+        const data = await res.json();
+        const badge = document.getElementById('db-status-badge');
+        if (!badge) return;
+        if (data.persistent) {
+          badge.style.background = 'rgba(16, 185, 129, 0.15)';
+          badge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+          badge.style.color = '#34d399';
+          badge.innerHTML = `<span>🟢</span> Cloud DB: ${data.type.toUpperCase()}`;
+          badge.title = data.message;
+        } else {
+          badge.style.background = 'rgba(239, 68, 68, 0.15)';
+          badge.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+          badge.style.color = '#f87171';
+          badge.innerHTML = `<span>⚠️</span> Ephemeral Storage`;
+          badge.title = data.message;
+        }
+      } catch (_) {}
+    }
+
     // Auto load on page start and poll every 25s
     fetchSignups();
-    setInterval(() => fetchSignups(false), 25000);
+    checkDbStatus();
+    setInterval(() => {
+      fetchSignups(false);
+      checkDbStatus();
+    }, 25000);
   </script>
 </body>
 </html>

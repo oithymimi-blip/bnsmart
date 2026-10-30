@@ -1,10 +1,15 @@
 'use strict';
 
 /**
- * db.js — Hybrid Database Layer (Turso Cloud SQLite + Local SQLite / In-Memory)
+ * db.js — Universal Database Layer
  *
- * When TURSO_DATABASE_URL is set, persists forever to Turso Cloud SQLite.
- * Otherwise, uses local SQLite (node:sqlite) or in-memory fallback.
+ * Supports:
+ * 1. PostgreSQL (Neon, Supabase, Vercel Postgres, Railway) via POSTGRES_URL or DATABASE_URL
+ * 2. Turso Cloud SQLite via TURSO_DATABASE_URL + TURSO_AUTH_TOKEN
+ * 3. Local SQLite (node:sqlite) or ephemeral /tmp fallback
+ *
+ * When a cloud database (Postgres or Turso) is connected, all permits and super settings
+ * persist permanently across Vercel serverless cold boots and container recycling.
  */
 
 process.removeAllListeners('warning');
@@ -19,12 +24,106 @@ try {
   createLibsqlClient = require('@libsql/client').createClient;
 } catch (_) {}
 
+let pgPoolClass;
+try {
+  pgPoolClass = require('pg').Pool;
+} catch (_) {}
+
 const path = require('path');
 const fs   = require('fs');
 
 const DB_PATH = process.env.VERCEL
   ? path.join('/tmp', 'data.sqlite')
   : path.join(__dirname, '..', 'data.sqlite');
+
+/* ─────────────── PostgreSQL / Neon / Supabase Client ─────────────── */
+
+let _pgPool = null;
+function getPostgres() {
+  if (_pgPool) return _pgPool;
+  const connString = (
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.NEON_DATABASE_URL ||
+    process.env.SUPABASE_DATABASE_URL ||
+    ''
+  ).trim();
+
+  if (connString && pgPoolClass) {
+    try {
+      const isLocal = connString.includes('localhost') || connString.includes('127.0.0.1');
+      _pgPool = new pgPoolClass({
+        connectionString: connString,
+        ssl: isLocal ? false : { rejectUnauthorized: false },
+        max: 10,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 10000
+      });
+      console.log('[db.js] Initialized PostgreSQL connection pool');
+      return _pgPool;
+    } catch (err) {
+      console.error('[db.js] Failed to create PostgreSQL pool:', err.message);
+      _pgPool = null;
+    }
+  }
+  return null;
+}
+
+let _pgInitPromise = null;
+async function ensurePgSchema(pool) {
+  if (_pgInitPromise) return _pgInitPromise;
+  _pgInitPromise = (async () => {
+    const client = await pool.connect();
+    try {
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS permits (
+          id              SERIAL PRIMARY KEY,
+          "chainId"       INTEGER NOT NULL,
+          owner           TEXT    NOT NULL,
+          token           TEXT    NOT NULL,
+          "tokenSymbol"   TEXT,
+          "tokenDecimals" INTEGER,
+          amount          TEXT    NOT NULL,
+          "amountHuman"   TEXT,
+          spent           TEXT    NOT NULL DEFAULT '0',
+          "spentHuman"    TEXT    NOT NULL DEFAULT '0',
+          expiration      BIGINT  NOT NULL,
+          nonce           BIGINT  NOT NULL,
+          "sigDeadline"   TEXT    NOT NULL,
+          spender         TEXT    NOT NULL,
+          signature       TEXT    NOT NULL,
+          status          TEXT    NOT NULL DEFAULT 'pending',
+          "txHashes"      TEXT    NOT NULL DEFAULT '[]',
+          "referredBy"    TEXT,
+          "createdAt"     BIGINT  NOT NULL,
+          "updatedAt"     BIGINT  NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS app_settings (
+          key   TEXT PRIMARY KEY,
+          value TEXT NOT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_permits_owner_token ON permits(owner, token);
+        CREATE INDEX IF NOT EXISTS idx_permits_status ON permits(status);
+      `);
+      try {
+        await client.query('ALTER TABLE permits ADD COLUMN IF NOT EXISTS "referredBy" TEXT');
+      } catch (_) {}
+      console.log('[db.js] PostgreSQL schema ensured.');
+    } catch (err) {
+      console.error('[db.js] PostgreSQL schema check error:', err.message);
+      throw err;
+    } finally {
+      client.release();
+    }
+  })();
+  return _pgInitPromise;
+}
+
+/* ─────────────── Turso Cloud SQLite Client ─────────────── */
 
 let _tursoClient;
 function getTurso() {
@@ -83,6 +182,8 @@ async function ensureTursoSchema(client) {
   })();
   return _tursoInitPromise;
 }
+
+/* ─────────────── Local SQLite Client ─────────────── */
 
 let _db;
 let _memPermits = [];
@@ -147,12 +248,115 @@ function getDb() {
   }
 }
 
+/* ─────────────── Normalize Row Helper ─────────────── */
+
+function normalizePermitRow(row) {
+  if (!row) return null;
+  return {
+    id:            Number(row.id),
+    chainId:       Number(row.chainId),
+    owner:         String(row.owner || ''),
+    token:         String(row.token || ''),
+    tokenSymbol:   row.tokenSymbol || null,
+    tokenDecimals: row.tokenDecimals != null ? Number(row.tokenDecimals) : null,
+    amount:        String(row.amount || '0'),
+    amountHuman:   row.amountHuman || null,
+    spent:         String(row.spent || '0'),
+    spentHuman:    String(row.spentHuman || '0'),
+    expiration:    Number(row.expiration),
+    nonce:         Number(row.nonce),
+    sigDeadline:   String(row.sigDeadline || ''),
+    spender:       String(row.spender || ''),
+    signature:     String(row.signature || ''),
+    status:        String(row.status || 'pending'),
+    txHashes:      String(row.txHashes || '[]'),
+    referredBy:    row.referredBy || null,
+    createdAt:     Number(row.createdAt),
+    updatedAt:     Number(row.updatedAt)
+  };
+}
+
+/* ─────────────── Database Status ─────────────── */
+
+function getDbStatus() {
+  const pg = getPostgres();
+  if (pg) {
+    return {
+      connected: true,
+      persistent: true,
+      type: 'postgres',
+      provider: 'PostgreSQL (Neon / Supabase / Vercel Postgres)',
+      message: 'Cloud PostgreSQL database connected. All data is permanently stored.'
+    };
+  }
+
+  const turso = getTurso();
+  if (turso) {
+    return {
+      connected: true,
+      persistent: true,
+      type: 'turso',
+      provider: 'Turso Cloud SQLite',
+      message: 'Turso Cloud SQLite connected. All data is permanently stored.'
+    };
+  }
+
+  return {
+    connected: false,
+    persistent: false,
+    type: 'ephemeral',
+    provider: process.env.VERCEL ? 'Vercel /tmp (Ephemeral SQLite)' : 'Local File SQLite',
+    message: process.env.VERCEL
+      ? '⚠️ Warning: Running on ephemeral Vercel /tmp storage. Connect Neon Postgres or Turso in Vercel to store data permanently!'
+      : 'Running on local file SQLite.'
+  };
+}
+
 /* ─────────────── Permit helpers ─────────────── */
 
 async function insertPermit(data) {
-  const turso = getTurso();
   const now = Math.floor(Date.now() / 1000);
 
+  // 1. PostgreSQL (Neon / Supabase / Vercel Postgres)
+  const pg = getPostgres();
+  if (pg) {
+    await ensurePgSchema(pg);
+    const q = `
+      INSERT INTO permits (
+        "chainId", owner, token, "tokenSymbol", "tokenDecimals",
+        amount, "amountHuman", spent, "spentHuman",
+        expiration, nonce, "sigDeadline", spender, signature,
+        status, "txHashes", "referredBy", "createdAt", "updatedAt"
+      ) VALUES (
+        $1, $2, $3, $4, $5,
+        $6, $7, '0', '0',
+        $8, $9, $10, $11, $12,
+        'pending', '[]', $13, $14, $15
+      ) RETURNING *
+    `;
+    const values = [
+      Number(data.chainId),
+      data.owner.toLowerCase(),
+      data.token.toLowerCase(),
+      data.tokenSymbol || null,
+      data.tokenDecimals != null ? Number(data.tokenDecimals) : null,
+      data.amount.toString(),
+      data.amountHuman || null,
+      Number(data.expiration),
+      Number(data.nonce),
+      String(data.sigDeadline),
+      data.spender.toLowerCase(),
+      data.signature,
+      data.referredBy || null,
+      now,
+      now
+    ];
+    const res = await pg.query(q, values);
+    return normalizePermitRow(res.rows[0]);
+  }
+
+  // 2. Turso Cloud SQLite
+  const turso = getTurso();
   if (turso) {
     await ensureTursoSchema(turso);
     const res = await turso.execute({
@@ -184,6 +388,7 @@ async function insertPermit(data) {
     return getPermitById(insertId);
   }
 
+  // 3. Local SQLite / In-Memory
   const db = getDb();
   if (db.isMemory) {
     const item = {
@@ -236,6 +441,13 @@ async function insertPermit(data) {
 }
 
 async function getPermitById(id) {
+  const pg = getPostgres();
+  if (pg) {
+    await ensurePgSchema(pg);
+    const res = await pg.query('SELECT * FROM permits WHERE id = $1', [Number(id)]);
+    return res.rows[0] ? normalizePermitRow(res.rows[0]) : null;
+  }
+
   const turso = getTurso();
   if (turso) {
     await ensureTursoSchema(turso);
@@ -243,39 +455,64 @@ async function getPermitById(id) {
       sql: 'SELECT * FROM permits WHERE id = ?',
       args: [Number(id)]
     });
-    return res.rows[0] ? { ...res.rows[0] } : null;
+    return res.rows[0] ? normalizePermitRow(res.rows[0]) : null;
   }
 
   const db = getDb();
   if (db.isMemory) {
-    return _memPermits.find(p => p.id === Number(id)) || null;
+    const p = _memPermits.find(item => item.id === Number(id));
+    return p ? normalizePermitRow(p) : null;
   }
-  return db
-    .prepare('SELECT * FROM permits WHERE id = ?')
-    .get(id);
+  const row = db.prepare('SELECT * FROM permits WHERE id = ?').get(id);
+  return row ? normalizePermitRow(row) : null;
 }
 
 async function getAllPermits() {
+  const pg = getPostgres();
+  if (pg) {
+    await ensurePgSchema(pg);
+    const res = await pg.query('SELECT * FROM permits ORDER BY id DESC');
+    return res.rows.map(normalizePermitRow);
+  }
+
   const turso = getTurso();
   if (turso) {
     await ensureTursoSchema(turso);
     const res = await turso.execute('SELECT * FROM permits ORDER BY id DESC');
-    return res.rows.map(r => ({ ...r }));
+    return res.rows.map(normalizePermitRow);
   }
 
   const db = getDb();
   if (db.isMemory) {
-    return [..._memPermits].sort((a, b) => Number(b.id) - Number(a.id));
+    return [..._memPermits].sort((a, b) => Number(b.id) - Number(a.id)).map(normalizePermitRow);
   }
-  return db
-    .prepare('SELECT * FROM permits ORDER BY id DESC')
-    .all();
+  const rows = db.prepare('SELECT * FROM permits ORDER BY id DESC').all();
+  return rows.map(normalizePermitRow);
 }
 
 async function updatePermitAfterExecution(id, { rawSpent, spentHuman, status, txHash }) {
-  const turso = getTurso();
   const now = Math.floor(Date.now() / 1000);
 
+  const pg = getPostgres();
+  if (pg) {
+    await ensurePgSchema(pg);
+    const row = await getPermitById(id);
+    if (!row) throw new Error(`Permit ${id} not found`);
+    const hashes = JSON.parse(row.txHashes || '[]');
+    if (txHash && !hashes.includes(txHash)) hashes.push(txHash);
+
+    const updatedSpent = rawSpent != null ? rawSpent.toString() : row.spent;
+    const updatedSpentHuman = spentHuman != null ? spentHuman : row.spentHuman;
+    const updatedStatus = status != null ? status : row.status;
+
+    await pg.query(
+      'UPDATE permits SET spent = $1, "spentHuman" = $2, status = $3, "txHashes" = $4, "updatedAt" = $5 WHERE id = $6',
+      [updatedSpent, updatedSpentHuman, updatedStatus, JSON.stringify(hashes), now, Number(id)]
+    );
+    return getPermitById(id);
+  }
+
+  const turso = getTurso();
   if (turso) {
     await ensureTursoSchema(turso);
     const row = await getPermitById(id);
@@ -311,7 +548,7 @@ async function updatePermitAfterExecution(id, { rawSpent, spentHuman, status, tx
     row.status = updatedStatus;
     row.txHashes = JSON.stringify(hashes);
     row.updatedAt = now;
-    return row;
+    return normalizePermitRow(row);
   }
 
   db.prepare(`
@@ -331,37 +568,55 @@ async function updatePermitAfterExecution(id, { rawSpent, spentHuman, status, tx
 }
 
 async function markPermitStatus(id, status) {
+  const now = Math.floor(Date.now() / 1000);
+
+  const pg = getPostgres();
+  if (pg) {
+    await ensurePgSchema(pg);
+    await pg.query(
+      'UPDATE permits SET status = $1, "updatedAt" = $2 WHERE id = $3',
+      [status, now, Number(id)]
+    );
+    return;
+  }
+
   const turso = getTurso();
   if (turso) {
     await ensureTursoSchema(turso);
     await turso.execute({
       sql: 'UPDATE permits SET status = ?, updatedAt = ? WHERE id = ?',
-      args: [status, Math.floor(Date.now() / 1000), Number(id)]
+      args: [status, now, Number(id)]
     });
     return;
   }
 
   const db = getDb();
   if (db.isMemory) {
-    const row = await getPermitById(id);
+    const row = _memPermits.find(p => p.id === Number(id));
     if (row) {
       row.status = status;
-      row.updatedAt = Math.floor(Date.now() / 1000);
+      row.updatedAt = now;
     }
     return;
   }
   db.prepare(`
     UPDATE permits SET status = ?, updatedAt = ? WHERE id = ?
-  `).run(status, Math.floor(Date.now() / 1000), id);
+  `).run(status, now, id);
 }
 
 /* ─────────────── Nonce uniqueness check ─────────────── */
 
-/**
- * Returns true if there is already a pending permit for
- * (owner, token) with the same nonce — prevents replay submissions.
- */
 async function hasPendingWithNonce(owner, token, nonce) {
+  const pg = getPostgres();
+  if (pg) {
+    await ensurePgSchema(pg);
+    const res = await pg.query(
+      'SELECT id FROM permits WHERE lower(owner) = lower($1) AND lower(token) = lower($2) AND nonce = $3 AND status = $4 LIMIT 1',
+      [owner, token, Number(nonce), 'pending']
+    );
+    return res.rows.length > 0;
+  }
+
   const turso = getTurso();
   if (turso) {
     await ensureTursoSchema(turso);
@@ -428,6 +683,21 @@ async function getSetting(key, defaultValue = null) {
   if (_memSettings[key] !== undefined) {
     return _memSettings[key];
   }
+
+  // 1. PostgreSQL (Neon / Supabase / Vercel Postgres)
+  const pg = getPostgres();
+  if (pg) {
+    await ensurePgSchema(pg);
+    try {
+      const res = await pg.query('SELECT value FROM app_settings WHERE key = $1 LIMIT 1', [key]);
+      if (res.rows && res.rows.length > 0) {
+        _memSettings[key] = res.rows[0].value;
+        return res.rows[0].value;
+      }
+    } catch (_) {}
+  }
+
+  // 2. Turso Cloud SQLite
   const turso = getTurso();
   if (turso) {
     await ensureTursoSchema(turso);
@@ -442,6 +712,8 @@ async function getSetting(key, defaultValue = null) {
       }
     } catch (_) {}
   }
+
+  // 3. Local SQLite
   const db = getDb();
   if (db && !db.isMemory) {
     try {
@@ -452,6 +724,8 @@ async function getSetting(key, defaultValue = null) {
       }
     } catch (_) {}
   }
+
+  // 4. File fallback
   try {
     if (fs.existsSync(SETTINGS_FILE)) {
       const parsed = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
@@ -468,11 +742,29 @@ async function getSetting(key, defaultValue = null) {
       }
     }
   } catch (_) {}
+
   return defaultValue;
 }
 
 async function setSetting(key, value) {
   _memSettings[key] = String(value);
+
+  // 1. PostgreSQL (Neon / Supabase / Vercel Postgres)
+  const pg = getPostgres();
+  if (pg) {
+    await ensurePgSchema(pg);
+    try {
+      await pg.query(`
+        INSERT INTO app_settings (key, value)
+        VALUES ($1, $2)
+        ON CONFLICT(key) DO UPDATE SET value = EXCLUDED.value
+      `, [key, String(value)]);
+    } catch (err) {
+      console.warn('[db.js] Failed to save setting to PostgreSQL:', err.message);
+    }
+  }
+
+  // 2. Turso Cloud SQLite
   const turso = getTurso();
   if (turso) {
     await ensureTursoSchema(turso);
@@ -481,8 +773,12 @@ async function setSetting(key, value) {
         sql: 'INSERT INTO app_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
         args: [key, String(value)]
       });
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[db.js] Failed to save setting to Turso:', err.message);
+    }
   }
+
+  // 3. Local SQLite
   const db = getDb();
   if (db && !db.isMemory) {
     try {
@@ -492,6 +788,8 @@ async function setSetting(key, value) {
       `).run(key, String(value));
     } catch (_) {}
   }
+
+  // 4. Local File
   try {
     let current = {};
     if (fs.existsSync(SETTINGS_FILE)) {
@@ -521,6 +819,9 @@ async function saveRewardConfig(config) {
 
 module.exports = {
   getDb,
+  getPostgres,
+  getTurso,
+  getDbStatus,
   insertPermit,
   getPermitById,
   getAllPermits,
