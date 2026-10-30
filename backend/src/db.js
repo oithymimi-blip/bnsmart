@@ -38,18 +38,58 @@ const DB_PATH = process.env.VERCEL
 
 /* ─────────────── PostgreSQL / Neon / Supabase Client ─────────────── */
 
+function findPostgresConnectionString() {
+  const knownKeys = [
+    'DATABASE_URL',
+    'POSTGRES_URL',
+    'POSTGRES_PRISMA_URL',
+    'POSTGRES_URL_NON_POOLING',
+    'DATABASE_URL_UNPOOLED',
+    'NEON_DATABASE_URL',
+    'SUPABASE_DATABASE_URL',
+    'STORAGE_URL',
+    'STORAGE_DATABASE_URL',
+    'STORAGE_POSTGRES_URL',
+    'STORAGE_DATABASE_URL_UNPOOLED'
+  ];
+
+  for (const k of knownKeys) {
+    const val = (process.env[k] || '').trim();
+    if (val && (val.startsWith('postgres://') || val.startsWith('postgresql://'))) {
+      console.log(`[db.js] Found PostgreSQL connection in process.env.${k}`);
+      return val;
+    }
+  }
+
+  // Scan ANY process.env variable for postgres:// or postgresql://
+  for (const [k, v] of Object.entries(process.env)) {
+    if (typeof v === 'string') {
+      const trimmed = v.trim();
+      if (trimmed.startsWith('postgres://') || trimmed.startsWith('postgresql://')) {
+        console.log(`[db.js] Auto-detected PostgreSQL connection in process.env.${k}`);
+        return trimmed;
+      }
+    }
+  }
+
+  // Individual parameters fallback (PGHOST, PGUSER, PGDATABASE)
+  if (process.env.PGHOST && process.env.PGUSER && process.env.PGDATABASE) {
+    const host = process.env.PGHOST;
+    const user = process.env.PGUSER;
+    const pass = process.env.PGPASSWORD || '';
+    const db = process.env.PGDATABASE;
+    const port = process.env.PGPORT || '5432';
+    console.log('[db.js] Constructed PostgreSQL connection from PGHOST/PGUSER/PGDATABASE');
+    return `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(pass)}@${host}:${port}/${db}?sslmode=require`;
+  }
+
+  return '';
+}
+
 let _pgPool = null;
 function getPostgres() {
   if (_pgPool) return _pgPool;
-  const connString = (
-    process.env.POSTGRES_URL ||
-    process.env.DATABASE_URL ||
-    process.env.POSTGRES_PRISMA_URL ||
-    process.env.POSTGRES_URL_NON_POOLING ||
-    process.env.NEON_DATABASE_URL ||
-    process.env.SUPABASE_DATABASE_URL ||
-    ''
-  ).trim();
+  const connString = findPostgresConnectionString();
 
   if (connString && pgPoolClass) {
     try {
